@@ -75,14 +75,18 @@ def main():
 		stock_list.append(price_width)
 		stock_list.append(change_width)
 
+		# Wait for info on 5 stocks before starting to display
 		if len(stock_list) > 24:
+			# Determine starting point for drawing stock info
 			if not ticker_start:
 				x_coordinate = 0
 				del stock_list[:6]
 			else:
 				x_coordinate = display_width
 
+			# Set to false (Should only be True on start of script)
 			ticker_start = False
+			# Calculate scroll length based on width of stock info
 			scroll_length = -1 * (stock_list[3] + stock_list[4] + stock_list[5] + 30)
 
 			while x_coordinate > scroll_length:
@@ -139,7 +143,7 @@ def draw_leaderboard(screen, width, height):
 	# TODO: Use login credentials to access leaderboard
 
 	# TODO: Display leaderboard info
-	
+
 	text = pygame.font.SysFont('Century Schoolbook', 40)
 	label = text.render('1. Wyn Mellett', 1, pitt_blue)
 	screen.blit(label, (100, 3 * height / 4))
