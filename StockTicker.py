@@ -23,26 +23,26 @@ def main():
 	red = (255, 0, 0)
 	green = (0, 255, 0)
 	blue = (0, 0, 255)
-	pitt_blue = (31, 50, 105)
+	pitt_blue = (25, 40, 87)
 
 	game_exit = False
 	game_start = True
 
 	# Create rectangle for clearing part of screen
 	fill_rect = pygame.Surface((display_width, 100))
-	rect = pygame.draw.rect(fill_rect, black, (0, display_height / 2, display_width, 100))
+	rect = pygame.draw.rect(fill_rect, blue, (0, 2 * display_height / 7, display_width, 100))
 
 	# Create title text
-	title_text = pygame.font.SysFont('arial', 90)
-	title_label = title_text.render('Pitt Pharmacy Investment League', 1, pitt_blue)
+	title_text = pygame.font.SysFont('Century Schoolbook', 80)
+	title_label = title_text.render('Investment League Leaderboard', 1, pitt_blue)
 	text_rect = title_label.get_rect()
-	text_rect.center = ((display_width / 2), (display_height / 6))
+	text_rect.center = ((display_width / 2), (display_height / 2))
 	screen.blit(title_label, text_rect)
 
 	# Read in title picture
 	pharm_img = pygame.image.load('Pharmacy.png')
 	img_rect = pharm_img.get_rect()
-	img_rect.center = ((display_width / 2), (5 * display_height / 6))
+	img_rect.center = ((display_width / 2), (display_height / 8))
 	screen.blit(pharm_img, img_rect)
 	
 	# Cycle through stocks gathering stock data
@@ -57,6 +57,9 @@ def main():
 
 		stock_price = cur_stock.get_price()
 		stock_change = cur_stock.get_change()
+
+		if stock_price is None or stock_change is None:
+			continue
 
 		# Render positive or negative price and change
 		if '-' in stock_change:
@@ -103,13 +106,13 @@ def main():
 					break
 
 				# Refresh screen
-				screen.blit(fill_rect, (0, display_height / 2))
+				screen.blit(fill_rect, (0, 2 * display_height / 7))
 				x_delta = 0
 
 				for i in range(0, len(stock_list), 6):
-					screen.blit(stock_list[i], (x_coordinate + x_delta, display_height / 2))
-					screen.blit(stock_list[i + 1], (x_coordinate + x_delta + stock_list[i + 3] + 10, display_height / 2))
-					screen.blit(stock_list[i + 2], (x_coordinate + x_delta + stock_list[i + 3] + stock_list[i + 4] + 20, display_height / 2))
+					screen.blit(stock_list[i], (x_coordinate + x_delta, 2 * display_height / 7))
+					screen.blit(stock_list[i + 1], (x_coordinate + x_delta + stock_list[i + 3] + 10, 2 * display_height / 7))
+					screen.blit(stock_list[i + 2], (x_coordinate + x_delta + stock_list[i + 3] + stock_list[i + 4] + 20, 2 * display_height / 7))
 					x_delta = x_delta + stock_list[i + 3] + stock_list[i + 4] + stock_list[i + 5] + 30
 
 				pygame.display.update()
