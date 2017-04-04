@@ -15,6 +15,7 @@ def main():
 	screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
 	# Initialize variable
+	clock = pygame.time.Clock()
 	stock_list = []
 
 	black = (0, 0, 0)
@@ -22,13 +23,27 @@ def main():
 	red = (255, 0, 0)
 	green = (0, 255, 0)
 	blue = (0, 0, 255)
+	pitt_blue = (31, 50, 105)
 
-	clock = pygame.time.Clock()
 	game_exit = False
 	game_start = True
 
+	# Create rectangle for clearing part of screen
 	fill_rect = pygame.Surface((display_width, 100))
 	rect = pygame.draw.rect(fill_rect, black, (0, display_height / 2, display_width, 100))
+
+	# Create title text
+	title_text = pygame.font.SysFont('arial', 90)
+	title_label = title_text.render('Pitt Pharmacy Investment League', 1, pitt_blue)
+	text_rect = title_label.get_rect()
+	text_rect.center = ((display_width / 2), (display_height / 6))
+	screen.blit(title_label, text_rect)
+
+	# Read in title picture
+	pharm_img = pygame.image.load('Pharmacy.png')
+	img_rect = pharm_img.get_rect()
+	img_rect.center = ((display_width / 2), (5 * display_height / 6))
+	screen.blit(pharm_img, img_rect)
 	
 	# Cycle through stocks gathering stock data
 	for symbol in cycle(stocks):
@@ -37,7 +52,7 @@ def main():
 		cur_stock = Share(symbol)
 
 		# Prepare text
-		large_text = pygame.font.SysFont('arial', 60)
+		large_text = pygame.font.SysFont('arial', 80)
 		symbol_label = large_text.render(symbol, 1, white)
 
 		stock_price = cur_stock.get_price()
