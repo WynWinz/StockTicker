@@ -1,8 +1,11 @@
 from yahoo_finance import Share
 from itertools import cycle
-import configparser
 import pygame
 import time
+import configparser
+import re
+from robobrowser import RoboBrowser
+from lxml import etree
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -10,6 +13,7 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 pitt_blue = (25, 40, 87)
+pitt_gold = (181, 161, 103)
 
 stock_list = []
 
@@ -134,20 +138,62 @@ def draw_title(screen, width, height):
 	screen.blit(title_label, text_rect)
 	pygame.display.update()
 
-def draw_leaderboard(screen, width, height):
+def get_credentials():
 	config = configparser.ConfigParser()
 	config.read('investopedia.ini')
-	username = config['LoginCredentials']['username']
-	password = config['LoginCredentials']['password']
+	email = config['LoginCredentials']['Email']
+	password = config['LoginCredentials']['Password']
 
-	# TODO: Use login credentials to access leaderboard
+	return email, password
 
-	# TODO: Display leaderboard info
+def draw_leaderboard(screen, width, height):
+	email, password = get_credentials()
 
-	text = pygame.font.SysFont('Century Schoolbook', 40)
-	label = text.render('1. Wyn Mellett', 1, pitt_blue)
-	screen.blit(label, (100, 3 * height / 4))
-	pygame.display.update()
+	# Use login credentials to access leaderboard
+	base_url = 'http://www.investopedia.com/accounts/login.aspx?'
+	browser = RoboBrowser(parser='lxml', history=True)
+	browser.open(base_url)
+	form = browser.get_form(id='account-api-form')
+	form['email'] = email
+	form['password'] = password
+
+	browser.submit_form(form)
+	browser.open('http://www.investopedia.com/simulator/ranking/')
+	leaderboard = browser.select('tr')
+
+	x = width / 15
+	y = 9 * height / 16
+
+	for i in range(1, 11):
+		data = leaderboard[i].text.replace('\n', '')
+		data = data.replace('.                ', '')
+		if i == 10:
+			data = data[2:]
+		else:
+			data = data[1:]
+		username = ''
+		for char in data:
+			if char == '(':
+				break
+			else:
+				username = username + char
+
+		if len(username) > 30:
+			username = username[:30]
+		
+		# Display leaderboard info
+		info = '{}. {}'.format(i, username)
+		text = pygame.font.SysFont('Century Schoolbook', 40)
+		label = text.render(info, 1, pitt_gold)
+		screen.blit(label, (x, y))
+		pygame.display.update()
+
+		if i == 5:
+			x = 11 * width / 21
+			y = 9 * height / 16
+		else:
+			y = y + 50
+
 
 def render_stock_info(stock_price, stock_change, large_text):
 	if '-' in stock_change:
