@@ -1,7 +1,14 @@
+''' Author: Edwin Mellett
+	Date Started: 4/3/17
+	Date Last Modified: 4/5/17
+
+	Stock ticker for the Pitt Pharmacy School.
+'''
+
 from yahoo_finance import Share
 from itertools import cycle
 import pygame
-import time
+import datetime
 import configparser
 import re
 from robobrowser import RoboBrowser
@@ -18,7 +25,6 @@ pitt_gold = (181, 161, 103)
 stock_list = []
 
 def main():
-
 	# Initialize and display window
 	screen, display_width, display_height = init_screen()
 
@@ -30,16 +36,17 @@ def main():
 
 	# Create rectangle for clearing part of screen
 	fill_rect = pygame.Surface((display_width, 100))
-	rect = pygame.draw.rect(fill_rect, blue, (0, 2 * display_height / 7, display_width, 100))
+	rect = pygame.draw.rect(fill_rect, black, (0, 2 * display_height / 7, display_width, 100))
 
 	# Display title picture
-	draw_image(screen, 'Pharmacy.png', display_width, display_height)
+	draw_image(screen, 'Pharmacy.png', display_width / 2, display_height / 8)
 
 	# Display leaderboard title
-	draw_title(screen, display_width, display_height)
+	draw_title(screen, display_width / 2, display_height / 2)
 
 	# Display leaderboard info
 	draw_leaderboard(screen, display_width, display_height)
+	last_day = datetime.datetime.now().day
 
 	# Update screen
 	pygame.display.update()
@@ -110,35 +117,72 @@ def main():
 				# Update screen
 				pygame.display.update()
 				x_coordinate = x_coordinate - 3
-				clock.tick(60)
+				clock.tick(45)
+
+			# Update leaderboard once a day at 11 pm
+			cur_hour = datetime.datetime.now().hour
+			cur_day = datetime.datetime.now().day
+			if(cur_day != last_day and cur_hour == 23):
+				draw_leaderboard(screen, display_width, display_height)
+				last_day = cur_day
 
 			# Exit game
 			if ticker_exit:
 				break
 
 def init_screen():
+	"""
+	Initialize fullscreen display.
+
+	Returns:
+		A tuple containing the screen object
+		and the screen's width and height.
+	"""
 	pygame.init()
 	infoObject = pygame.display.Info()
-	display_width = infoObject.current_w
-	display_height = infoObject.current_h
+	width = infoObject.current_w
+	height = infoObject.current_h
 	screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-	return screen, display_width, display_height
+	return screen, width, height
 
-def draw_image(screen, image_name, width, height):
+def draw_image(screen, image_name, x, y):
+	"""
+	Draws a given image on the screen.
+
+	Args:
+		screen: the display object
+		image_name: name of image file
+		x: x coordinate to start drawing
+		y: y coordinate to start drawing
+	"""
 	image = pygame.image.load(image_name)
 	img_rect = image.get_rect()
-	img_rect.center = (width / 2, height / 8)
+	img_rect.center = (x, y)
 	screen.blit(image, img_rect)
 
-def draw_title(screen, width, height):
+def draw_title(screen, x, y):
+	"""
+	Draws the leaderboard title on the screen.
+
+	Args:
+		screen: the display object
+		x: x coordinate to start drawing
+		y: y coordinate to start drawing
+	"""
 	title_text = pygame.font.SysFont('Century Schoolbook', 80)
 	title_label = title_text.render('Investment League Leaderboard', 1, pitt_blue)
 	text_rect = title_label.get_rect()
-	text_rect.center = (width / 2, height / 2)
+	text_rect.center = (x, y)
 	screen.blit(title_label, text_rect)
 	pygame.display.update()
 
 def get_credentials():
+	"""
+	Retrieves credentials from config file.
+
+	Returns:
+		A tuple containing the email and password necessary for login.
+	"""
 	config = configparser.ConfigParser()
 	config.read('investopedia.ini')
 	email = config['LoginCredentials']['Email']
@@ -146,7 +190,29 @@ def get_credentials():
 
 	return email, password
 
+def clear_leaderboard(screen, width, height):
+	"""
+	Draws over the current leaderboard to clear it.
+
+	Args:
+		screen: the display object
+		width: display width
+		height: display height
+	"""
+	clear_rect = pygame.Surface((width, height / 2))
+	rect = pygame.draw.rect(clear_rect, black, (0, height / 2, width, 9 * height / 16))
+	screen.blit(clear_rect, (0, 9 * height / 16))
+
 def draw_leaderboard(screen, width, height):
+	"""
+	Retrieve data from investopedia and draw leaderboard on screen.
+
+	Args:
+		screen: the display object
+		width: display width
+		height: display height
+	"""
+	clear_leaderboard(screen, width, height)
 	email, password = get_credentials()
 
 	# Use login credentials to access leaderboard
@@ -196,6 +262,17 @@ def draw_leaderboard(screen, width, height):
 
 
 def render_stock_info(stock_price, stock_change, large_text):
+	"""
+	Renders price and day's change labels.
+
+	Args:
+		stock_price: current stock price
+		stock_change: current dollar change in stock price
+		large_text: font used to render labels
+
+	Returns:
+		A tuple containing the price and change labels.
+	"""
 	if '-' in stock_change:
 		price_label = large_text.render(stock_price, 1, red)
 		change_label = large_text.render(stock_change, 1, red)
@@ -206,6 +283,12 @@ def render_stock_info(stock_price, stock_change, large_text):
 	return price_label, change_label
 
 def handle_events():
+	"""
+	Event handler for the stock ticker.
+
+	Returns:
+		A boolean indicating if the program should exit.
+	"""
 	ticker_exit = False
 	for event in pygame.event.get():
 		if event.type == pygame.KEYDOWN:
@@ -216,13 +299,21 @@ def handle_events():
 
 	return ticker_exit
 
-def display_stock_info(screen, x, height):
+def display_stock_info(screen, x, y):
+	"""
+	Draw stocks to screen.
+
+	Args:
+		screen: the display object
+		x: x coordinate to start drawing
+		y: y coordinate to start drawing
+	"""
 	x_delta = 0
 
 	for i in range(0, len(stock_list), 6):
-		screen.blit(stock_list[i], (x + x_delta, 2 * height / 7))
-		screen.blit(stock_list[i + 1], (x + x_delta + stock_list[i + 3] + 10, 2 * height / 7))
-		screen.blit(stock_list[i + 2], (x + x_delta + stock_list[i + 3] + stock_list[i + 4] + 20, 2 * height / 7))
+		screen.blit(stock_list[i], (x + x_delta, 2 * y / 7))
+		screen.blit(stock_list[i + 1], (x + x_delta + stock_list[i + 3] + 10, 2 * y / 7))
+		screen.blit(stock_list[i + 2], (x + x_delta + stock_list[i + 3] + stock_list[i + 4] + 20, 2 * y / 7))
 		x_delta = x_delta + stock_list[i + 3] + stock_list[i + 4] + stock_list[i + 5] + 30
 
 if __name__ == '__main__':
