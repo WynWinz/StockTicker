@@ -25,6 +25,9 @@ pitt_gold = (181, 161, 103)
 
 stock_list = []
 
+# Set to false to disable full screen.
+enable_fullscreen = True
+
 def main():
 	# Initialize and display window
 	screen, display_width, display_height = init_screen()
@@ -150,7 +153,10 @@ def init_screen():
 	infoObject = pygame.display.Info()
 	width = infoObject.current_w
 	height = infoObject.current_h
-	screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+	if enable_fullscreen:
+		screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+	else:
+		screen = pygame.display.set_mode((width - 100, height - 100))
 	return screen, width, height
 
 def draw_image(screen, image_name, x, y):
