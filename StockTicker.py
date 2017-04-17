@@ -1,9 +1,10 @@
-''' Author: Edwin Mellett
-	Date Started: 4/3/17
-	Date Last Modified: 4/5/17
+""" 
+Author: Edwin Mellett
+Date Started: 4/3/17
+Date Last Modified: 4/6/17
 
-	Stock ticker for the Pitt Pharmacy School.
-'''
+Stock ticker for the Pitt Pharmacy School.
+"""
 
 from yahoo_finance import Share
 from itertools import cycle
@@ -58,7 +59,14 @@ def main():
 	for symbol in cycle(stocks):
 		symbol = symbol.replace('\n', '')
 		symbol = symbol.replace(' ', '')
-		cur_stock = Share(symbol)
+
+		# Attempt to retrieve stock data.
+		# Skip stock if an exception is raised.
+		try:
+			cur_stock = Share(symbol)
+		except:
+			continue
+
 
 		# Prepare text
 		large_text = pygame.font.SysFont('arial', 80)
