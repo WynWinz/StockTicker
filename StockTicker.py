@@ -32,6 +32,9 @@ def main():
 	# Initialize and display window
 	screen, display_width, display_height = init_screen()
 
+	# Hide cursor
+	pygame.mouse.set_visible(False)
+
 	# Initialize variables
 	clock = pygame.time.Clock()
 
